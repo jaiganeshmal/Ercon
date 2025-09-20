@@ -27,14 +27,18 @@ const NextArrow = ({ onClick }) => (
 
 const Carousel = () => {
   const [carouselImages, setCarouselImages] = useState([]);
-  const API_URL = "http://localhost:5000/api/carousel"; // backend endpoint
+  const API_URL = "http://localhost/jk/ecron/carosal_api.php"; // ✅ PHP API endpoint
 
   // 🔹 Fetch carousel images from backend
   const fetchCarousel = async () => {
     try {
       const res = await axios.get(API_URL);
-      // backend se sirf image filenames aa rahe, full URL banana padega
-      const images = res.data.map(img => `http://localhost:5000/uploads/${img.image}`);
+      console.log("API Response:", res.data);
+
+      // ✅ Backend already full image URL bhej raha hai
+      const images = res.data.map(item => item.img_url);
+      console.log("Mapped Images:", images);
+
       setCarouselImages(images);
     } catch (err) {
       console.error("Failed to fetch carousel images:", err);
@@ -60,15 +64,19 @@ const Carousel = () => {
 
   return (
     <div className="slider-container relative overflow-hidden w-full">
-      <Slider {...settings} className='w-full md:h-[86vh]'>
+      <Slider {...settings} className="w-full md:h-[86vh]">
         {carouselImages.length > 0 ? (
           carouselImages.map((image, index) => (
             <div key={index} className="h-[50vh] md:h-[86vh] w-full">
               <img
                 src={image}
-                className="w-full h-full object-cover"
-                loading='lazy'
                 alt={`Carousel ${index + 1}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  console.error("Image load failed:", image);
+                  e.target.src = "/fallback.jpg"; // ✅ fallback image
+                }}
               />
             </div>
           ))

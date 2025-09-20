@@ -22,14 +22,16 @@ const CategoryProducts = ({ categoryFromHome }) => {
 
   const navigate = useNavigate();
 
-  // ✅ Fetch categories from API
+  // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/categories");
-        setCategories(res.data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
-        if (!categoryFromHome && res.data.length > 0) {
-          setSelectedCategory(res.data[0].name); // Default pehli category
+        const res = await axios.get("http://localhost/jk/ecron/category_api.php");
+        if (res.data.status === "success") {
+          setCategories(res.data.data);
+          if (!categoryFromHome && res.data.data.length > 0) {
+            setSelectedCategory(res.data.data[0].category_name);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -39,13 +41,15 @@ const CategoryProducts = ({ categoryFromHome }) => {
     fetchCategories();
   }, [categoryFromHome]);
 
-  // ✅ Fetch products from API
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/api/products");
-        setProducts(res.data);
+        const res = await axios.get("http://localhost/jk/ecron/product_api.php");
+        if (res.data.status === "success") {
+          setProducts(res.data.data);
+        }
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -56,66 +60,53 @@ const CategoryProducts = ({ categoryFromHome }) => {
     fetchProducts();
   }, []);
 
-  // ✅ Update category if home se aayi ho
+  // Update selected category if passed from home
   useEffect(() => {
     if (categoryFromHome) setSelectedCategory(categoryFromHome);
   }, [categoryFromHome]);
 
-  // ✅ Filtered Products
+  // Filtered products
   const filteredProducts = products.filter(
-    (p) => selectedCategory && p.category?.toLowerCase() === selectedCategory.toLowerCase()
+    (p) =>
+      selectedCategory &&
+      p.category?.toLowerCase() === selectedCategory.toLowerCase()
   );
 
-  if (loading) {
-    return (
-      <div className="w-full h-[70vh] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-t-blue-600 border-gray-200 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="w-full h-[70vh] flex items-center justify-center">
-        <p className="text-red-500 text-lg">{error}</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="w-full h-[70vh] flex items-center justify-center"><div className="w-12 h-12 border-4 border-t-blue-600 border-gray-200 rounded-full animate-spin"></div></div>;
+  if (error) return <div className="w-full h-[70vh] flex items-center justify-center text-red-500">{error}</div>;
 
   return (
     <div className="w-full my-10 md:px-0 px-10">
-      {/* ✅ Dynamic Categories from API */}
-      <div className="flex flex-wrap gap-6 md:gap-6 justify-center w-full md:w-[80%] mx-auto">
+      {/* Categories */}
+      <div className="flex flex-wrap gap-6 justify-center w-full md:w-[80%] mx-auto">
         {categories.map((cat) => (
           <button
-            key={cat._id}
-            onClick={() => setSelectedCategory(cat.name)}
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.category_name)}
             className={`text-lg uppercase font-semibold cursor-pointer transition
-              ${selectedCategory === cat.name
-                ? "text-[#FF5C3F]"
-                : "text-gray-600 hover:text-[#FF5C3F]"
-              }`}
+              ${selectedCategory === cat.category_name ? "text-[#FF5C3F]" : "text-gray-600 hover:text-[#FF5C3F]"}`}
           >
-            {cat.name}
+            {cat.category_name}
           </button>
         ))}
       </div>
 
-      {/* ✅ Products Grid */}
+      {/* Products */}
       <div className="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 items-center mt-10 gap-10 md:px-10">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
             <motion.div
-              key={product._id}
+              key={product.id}
               variants={cardVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: false, amount: 0.3 }}
               className="shadow-xl rounded-xl cursor-pointer"
-              onClick={() => navigate(`/SingleCardPaage/${product._id}`)}
+              // ✅ Pass full product object to single page
+              onClick={() => navigate(`/SingleCardPaage/${product.id}`, { state: { product } })}
             >
               <img
-                src={`http://localhost:5000/uploads/${product.image1}`}
+                src={product.image1}
                 alt={product.title}
                 className="w-full object-contain border-b-2 pb-2 border-gray-200 mix-blend-multiply aspect-square rounded-t-xl"
                 loading="lazy"

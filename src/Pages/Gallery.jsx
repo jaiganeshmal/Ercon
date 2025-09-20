@@ -12,11 +12,17 @@ const Gallery = () => {
     const fetchGallery = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/api/gallery");
-        const images = res.data.map(img => `http://localhost:5000/uploads/${img.image}`);
-        setGalleryImages(images);
+        const res = await axios.get("http://localhost/jk/ecron/gallery_api.php");
+
+        if (res.data.status === "success" && Array.isArray(res.data.data)) {
+          // API ke response se direct image URL use karna
+          const images = res.data.data.map((img) => img.image);
+          setGalleryImages(images);
+        } else {
+          setGalleryImages([]);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching gallery:", err);
       } finally {
         setLoading(false);
       }
@@ -25,13 +31,9 @@ const Gallery = () => {
     fetchGallery();
   }, []);
 
-  // Disable background scroll when preview is open
+  // Disable background scroll jab modal open ho
   useEffect(() => {
-    if (previewImage) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
+    document.body.style.overflow = previewImage ? "hidden" : "auto";
   }, [previewImage]);
 
   if (loading) {
@@ -44,10 +46,12 @@ const Gallery = () => {
       </div>
     );
   }
-  // bg-gradient-to-br from-blue-50 to-blue-100
+
   return (
-    <div className="min-h-screen p-4 md:p-10 ">
-      <h1 className="text-3xl md:text-4xl font-bold text-blue-700 mb-6 text-center">Gallery</h1>
+    <div className="min-h-screen p-4 md:p-10">
+      <h1 className="text-3xl md:text-4xl font-bold text-blue-700 mb-6 text-center">
+        Gallery
+      </h1>
 
       {galleryImages.length === 0 ? (
         <p className="text-center text-gray-500">No images to display</p>
@@ -73,10 +77,7 @@ const Gallery = () => {
       {/* Preview Modal */}
       {previewImage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          {/* Click outside modal to close */}
-          <div
-            className="relative max-w-full max-h-full flex items-center justify-center"
-          >
+          <div className="relative max-w-full max-h-full flex items-center justify-center">
             <img
               src={previewImage}
               alt="Preview"
@@ -90,7 +91,7 @@ const Gallery = () => {
             </button>
           </div>
 
-          {/* Close on clicking outside modal */}
+          {/* Background click close */}
           <div
             className="fixed inset-0"
             onClick={() => setPreviewImage(null)}

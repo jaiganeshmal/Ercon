@@ -1,3 +1,4 @@
+// ProductSearch.jsx
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaChevronDown } from "react-icons/fa";
@@ -16,13 +17,15 @@ export default function ProductSearch() {
 
   const navigate = useNavigate();
 
-  // ✅ Fetch categories from API
+  // ✅ Fetch categories from PHP API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/categories");
-        const catNames = ["All", ...res.data.map((c) => c.name)];
-        setCategories(catNames);
+        const res = await axios.get("http://localhost/jk/ecron/category_api.php");
+        if (res.data.status === "success") {
+          const catNames = ["All", ...res.data.data.map((c) => c.category_name)];
+          setCategories(catNames);
+        }
       } catch (err) {
         console.error("Failed to fetch categories:", err);
       }
@@ -30,12 +33,14 @@ export default function ProductSearch() {
     fetchCategories();
   }, []);
 
-  // ✅ Fetch products from API
+  // Fetch products from PHP API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products");
-        setProducts(res.data);
+        const res = await axios.get("http://localhost/jk/ecron/product_api.php");
+        if (res.data.status === "success") {
+          setProducts(res.data.data);
+        }
       } catch (err) {
         console.error("Failed to fetch products:", err);
       }
@@ -43,18 +48,22 @@ export default function ProductSearch() {
     fetchProducts();
   }, []);
 
-  // Filter suggestions
   const updateSuggestions = (term, category) => {
-    const filtered = products.filter(
-      (p) =>
-        (category === "All" || p.category === category) &&
-        p.title.toLowerCase().includes(term.toLowerCase())
-    );
+    const trimmedTerm = term.trim().toLowerCase();
 
-    if (term === "") {
+    if (!trimmedTerm) {
       setSuggestions([]);
       setErrorMessage("");
-    } else if (filtered.length > 0) {
+      return;
+    }
+
+    const filtered = products.filter((p) => {
+      const titleMatch = p.title.toLowerCase().includes(trimmedTerm);
+      const categoryMatch = category === "All" || p.category.toLowerCase() === category.toLowerCase();
+      return titleMatch && categoryMatch;
+    });
+
+    if (filtered.length > 0) {
       setSuggestions(filtered);
       setErrorMessage("");
     } else {
@@ -76,24 +85,31 @@ export default function ProductSearch() {
     updateSuggestions(searchTerm, cat);
   };
 
-  const handleProductClick = (id) => {
-    navigate(`/SingleCardPaage/${id}`);
+  // Example
+  const handleProductClick = (product) => {
+    navigate(`/SingleCardPaage/${product.id}`, { state: { product } });
   };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    let productToNavigate = null;
+
     if (highlightIndex >= 0 && suggestions[highlightIndex]) {
-      navigate(`/SingleCardPaage/${suggestions[highlightIndex]._id}`);
+      productToNavigate = suggestions[highlightIndex];
     } else if (suggestions.length === 1) {
-      navigate(`/SingleCardPaage/${suggestions[0]._id}`);
-    } else if (suggestions.length > 0) {
-      setErrorMessage("Please select a product from suggestions.");
+      productToNavigate = suggestions[0];
+    }
+    if (productToNavigate) {
+      navigate(`/SingleCardPaage/${productToNavigate.id}`, { state: { product: productToNavigate } });
     } else {
       setErrorMessage("No matching product found.");
     }
   };
 
   const handleKeyDown = (e) => {
+    if (suggestions.length === 0) return;
+
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setHighlightIndex((prev) => (prev + 1) % suggestions.length);
@@ -101,6 +117,7 @@ export default function ProductSearch() {
       e.preventDefault();
       setHighlightIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
     } else if (e.key === "Enter") {
+      e.preventDefault();
       handleSubmit(e);
     }
   };
@@ -157,11 +174,10 @@ export default function ProductSearch() {
         >
           {suggestions.map((product, index) => (
             <div
-              key={product._id}
-              onClick={() => handleProductClick(product._id)}
-              className={`px-4 py-2 cursor-pointer border-b last:border-b-0 transition-all ${
-                highlightIndex === index ? "bg-blue-500 text-white" : "hover:bg-gray-100"
-              }`}
+              key={product.id}
+              onClick={() => handleProductClick(product)} // product object pass
+              className={`px-4 py-2 cursor-pointer border-b last:border-b-0 transition-all ${highlightIndex === index ? "bg-blue-500 text-white" : "hover:bg-gray-100"
+                }`}
             >
               <div className="font-medium">{product.title}</div>
               <div className="text-xs text-gray-500">{product.category}</div>
