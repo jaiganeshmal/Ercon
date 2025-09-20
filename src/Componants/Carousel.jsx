@@ -35,15 +35,16 @@ const Carousel = () => {
       const res = await axios.get(API_URL);
       console.log("API Response:", res.data);
 
-      // ✅ Backend already full image URL bhej raha hai
-      const images = res.data.map(item => item.img_url);
-      console.log("Mapped Images:", images);
+      // ✅ Reverse order for latest-first display
+      const images = res.data.map(item => item.img_url).reverse();
+      console.log("Mapped Images (Reversed):", images);
 
       setCarouselImages(images);
     } catch (err) {
       console.error("Failed to fetch carousel images:", err);
     }
   };
+
 
   useEffect(() => {
     fetchCarousel();

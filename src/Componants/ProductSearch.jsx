@@ -1,4 +1,3 @@
-// ProductSearch.jsx
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaChevronDown } from "react-icons/fa";
@@ -17,14 +16,15 @@ export default function ProductSearch() {
 
   const navigate = useNavigate();
 
-  // ✅ Fetch categories from PHP API
+  // ✅ Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await axios.get("http://localhost/jk/ecron/category_api.php");
         if (res.data.status === "success") {
-          const catNames = ["All", ...res.data.data.map((c) => c.category_name)];
-          setCategories(catNames);
+          // Reverse categories array
+          const reversedCategories = res.data.data.map(c => c.category_name).reverse();
+          setCategories(["All", ...reversedCategories]);
         }
       } catch (err) {
         console.error("Failed to fetch categories:", err);
@@ -33,13 +33,15 @@ export default function ProductSearch() {
     fetchCategories();
   }, []);
 
-  // Fetch products from PHP API
+  // ✅ Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get("http://localhost/jk/ecron/product_api.php");
         if (res.data.status === "success") {
-          setProducts(res.data.data);
+          // Reverse products array
+          const reversedProducts = res.data.data.reverse();
+          setProducts(reversedProducts);
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -50,7 +52,6 @@ export default function ProductSearch() {
 
   const updateSuggestions = (term, category) => {
     const trimmedTerm = term.trim().toLowerCase();
-
     if (!trimmedTerm) {
       setSuggestions([]);
       setErrorMessage("");
@@ -85,11 +86,9 @@ export default function ProductSearch() {
     updateSuggestions(searchTerm, cat);
   };
 
-  // Example
   const handleProductClick = (product) => {
     navigate(`/SingleCardPaage/${product.id}`, { state: { product } });
   };
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -100,6 +99,7 @@ export default function ProductSearch() {
     } else if (suggestions.length === 1) {
       productToNavigate = suggestions[0];
     }
+
     if (productToNavigate) {
       navigate(`/SingleCardPaage/${productToNavigate.id}`, { state: { product: productToNavigate } });
     } else {
@@ -175,9 +175,10 @@ export default function ProductSearch() {
           {suggestions.map((product, index) => (
             <div
               key={product.id}
-              onClick={() => handleProductClick(product)} // product object pass
-              className={`px-4 py-2 cursor-pointer border-b last:border-b-0 transition-all ${highlightIndex === index ? "bg-blue-500 text-white" : "hover:bg-gray-100"
-                }`}
+              onClick={() => handleProductClick(product)}
+              className={`px-4 py-2 cursor-pointer border-b last:border-b-0 transition-all ${
+                highlightIndex === index ? "bg-blue-500 text-white" : "hover:bg-gray-100"
+              }`}
             >
               <div className="font-medium">{product.title}</div>
               <div className="text-xs text-gray-500">{product.category}</div>

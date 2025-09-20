@@ -15,8 +15,8 @@ const Gallery = () => {
         const res = await axios.get("http://localhost/jk/ecron/gallery_api.php");
 
         if (res.data.status === "success" && Array.isArray(res.data.data)) {
-          // API ke response se direct image URL use karna
-          const images = res.data.data.map((img) => img.image);
+          // ✅ Reverse images array
+          const images = res.data.data.map((img) => img.image).reverse();
           setGalleryImages(images);
         } else {
           setGalleryImages([]);

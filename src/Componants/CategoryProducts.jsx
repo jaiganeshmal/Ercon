@@ -22,15 +22,16 @@ const CategoryProducts = ({ categoryFromHome }) => {
 
   const navigate = useNavigate();
 
-  // Fetch categories
+  // ✅ Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await axios.get("http://localhost/jk/ecron/category_api.php");
         if (res.data.status === "success") {
-          setCategories(res.data.data);
-          if (!categoryFromHome && res.data.data.length > 0) {
-            setSelectedCategory(res.data.data[0].category_name);
+          const reversedCategories = res.data.data.reverse();
+          setCategories(reversedCategories);
+          if (!categoryFromHome && reversedCategories.length > 0) {
+            setSelectedCategory(reversedCategories[0].category_name);
           }
         }
       } catch (err) {
@@ -41,14 +42,16 @@ const CategoryProducts = ({ categoryFromHome }) => {
     fetchCategories();
   }, [categoryFromHome]);
 
-  // Fetch products
+  // ✅ Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         const res = await axios.get("http://localhost/jk/ecron/product_api.php");
         if (res.data.status === "success") {
-          setProducts(res.data.data);
+          // Reverse products array
+          const reversedProducts = res.data.data.reverse();
+          setProducts(reversedProducts);
         }
         setLoading(false);
       } catch (err) {
@@ -65,15 +68,25 @@ const CategoryProducts = ({ categoryFromHome }) => {
     if (categoryFromHome) setSelectedCategory(categoryFromHome);
   }, [categoryFromHome]);
 
-  // Filtered products
+  // Filtered products by category
   const filteredProducts = products.filter(
     (p) =>
       selectedCategory &&
       p.category?.toLowerCase() === selectedCategory.toLowerCase()
   );
 
-  if (loading) return <div className="w-full h-[70vh] flex items-center justify-center"><div className="w-12 h-12 border-4 border-t-blue-600 border-gray-200 rounded-full animate-spin"></div></div>;
-  if (error) return <div className="w-full h-[70vh] flex items-center justify-center text-red-500">{error}</div>;
+  if (loading)
+    return (
+      <div className="w-full h-[70vh] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-t-blue-600 border-gray-200 rounded-full animate-spin"></div>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="w-full h-[70vh] flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
 
   return (
     <div className="w-full my-10 md:px-0 px-10">
@@ -84,7 +97,11 @@ const CategoryProducts = ({ categoryFromHome }) => {
             key={cat.id}
             onClick={() => setSelectedCategory(cat.category_name)}
             className={`text-lg uppercase font-semibold cursor-pointer transition
-              ${selectedCategory === cat.category_name ? "text-[#FF5C3F]" : "text-gray-600 hover:text-[#FF5C3F]"}`}
+              ${
+                selectedCategory === cat.category_name
+                  ? "text-[#FF5C3F]"
+                  : "text-gray-600 hover:text-[#FF5C3F]"
+              }`}
           >
             {cat.category_name}
           </button>
@@ -102,8 +119,9 @@ const CategoryProducts = ({ categoryFromHome }) => {
               whileInView="visible"
               viewport={{ once: false, amount: 0.3 }}
               className="shadow-xl rounded-xl cursor-pointer"
-              // ✅ Pass full product object to single page
-              onClick={() => navigate(`/SingleCardPaage/${product.id}`, { state: { product } })}
+              onClick={() =>
+                navigate(`/SingleCardPaage/${product.id}`, { state: { product } })
+              }
             >
               <img
                 src={product.image1}
