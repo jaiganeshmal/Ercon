@@ -26,7 +26,8 @@ const CategoryProducts = ({ categoryFromHome }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("http://localhost/jk/ecron/category_api.php");
+        // const res = await axios.get("http://localhost/jk/ecron/category_api.php");
+        const res = await axios.get("https://erconind.com/ercon/category_api.php");
         if (res.data.status === "success") {
           const reversedCategories = res.data.data.reverse();
           setCategories(reversedCategories);
@@ -47,7 +48,8 @@ const CategoryProducts = ({ categoryFromHome }) => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost/jk/ecron/product_api.php");
+        // const res = await axios.get("http://localhost/jk/ecron/product_api.php");
+        const res = await axios.get("https://erconind.com/ercon/product_api.php");
         if (res.data.status === "success") {
           // Reverse products array
           const reversedProducts = res.data.data.reverse();

@@ -27,7 +27,8 @@ const NextArrow = ({ onClick }) => (
 
 const Carousel = () => {
   const [carouselImages, setCarouselImages] = useState([]);
-  const API_URL = "http://localhost/jk/ecron/carosal_api.php"; // ✅ PHP API endpoint
+  // const API_URL = "http://localhost/jk/ecron/carosal_api.php"; // ✅ PHP API endpoint
+  const API_URL = "https://erconind.com/ercon/carosal_api.php"; // ✅ PHP API endpoint
 
   // 🔹 Fetch carousel images from backend
   const fetchCarousel = async () => {

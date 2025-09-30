@@ -12,7 +12,8 @@ const Gallery = () => {
     const fetchGallery = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost/jk/ecron/gallery_api.php");
+        // const res = await axios.get("http://localhost/jk/ecron/gallery_api.php");
+        const res = await axios.get("https://erconind.com/ercon/gallery_api.php");
 
         if (res.data.status === "success" && Array.isArray(res.data.data)) {
           // ✅ Reverse images array

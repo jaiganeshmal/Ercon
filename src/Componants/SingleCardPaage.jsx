@@ -25,7 +25,7 @@ const SingleCardPage = () => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost/jk/ecron/product_api.php?id=${id}`);
+        const res = await axios.get(`https://erconind.com/ercon/product_api.php?id=${id}`);
 
         if (res.data.status === "success" && res.data.data.length > 0) {
           const data = res.data.data[0];
